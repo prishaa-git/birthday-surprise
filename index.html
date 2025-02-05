@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Tiggle!</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #1a1a1a;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #gameContainer {
+            width: 800px;
+            height: 600px;
+            position: relative;
+            background: linear-gradient(to bottom, #2c3e50, #3498db);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .character {
+            width: 80px;
+            height: 160px;
+            position: absolute;
+            bottom: 100px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            transition: transform 0.3s;
+        }
+        #tiggle {
+            left: 50px;
+            background-image: url('/api/placeholder/80/160');
+            /* Placeholder for the blue character sprite */
+            filter: hue-rotate(240deg);
+        }
+        #mimosa {
+            left: 150px;
+            background-image: url('/api/placeholder/80/160');
+            /* Placeholder for the black character sprite */
+            filter: brightness(0.8);
+        }
+        .message {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            width: 80%;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            background: #e74c3c;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            transform: scale(1.1);
+        }
+        .door {
+            position: absolute;
+            width: 80px;
+            height: 160px;
+            background: #8b4513;
+            right: 100px;
+            bottom: 100px;
+            transition: all 0.5s;
+        }
+        .cake {
+            position: absolute;
+            width: 120px;
+            height: 100px;
+            right: 80px;
+            bottom: 100px;
+            opacity: 0;
+            transition: all 0.5s;
+        }
+        .cake-base {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            background: #ff9999;
+            border-radius: 10px;
+        }
+        .cake-top {
+            position: absolute;
+            bottom: 60%;
+            width: 100%;
+            height: 40%;
+            background: #ffcccc;
+            border-radius: 10px 10px 0 0;
+        }
+        .candle {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            width: 8px;
+            height: 20px;
+            background: #ffff00;
+            transform: translateX(-50%);
+        }
+        .flame {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            width: 16px;
+            height: 20px;
+            background: #ff6600;
+            border-radius: 50% 50% 20% 20%;
+            transform: translateX(-50%);
+            animation: flicker 0.5s infinite alternate;
+        }
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(1.2); }
+        }
+        @keyframes clap {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-20deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .clapping {
+            animation: clap 0.5s infinite;
+        }
+        .celebration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="tiggle" class="character"></div>
+        <div id="mimosa" class="character"></div>
+        <div class="message" id="message"></div>
+        <div class="door" id="door"></div>
+        <div class="cake" id="cake">
+            <div class="cake-base"></div>
+            <div class="cake-top"></div>
+            <div class="candle"></div>
+            <div class="flame" id="flame"></div>
+        </div>
+        <div class="controls">
+            <button id="leftBtn">←</button>
+            <button id="rightBtn">→</button>
+        </div>
+        <div class="celebration" id="celebration"></div>
+    </div>
+
+    <script>
+        const messages = [
+            "Hey Tiggle (Nonnu)! Ready for a journey?",
+            "3 years ago, we met on BGMI...",
+            "Your amazing voice and songs brought joy!",
+            "Through every game, every chat...",
+            "You've been such a special friend",
+            "Someone who makes me smile everyday",
+            "Who I can never get tired of talking to...",
+            "Let's celebrate your special day!",
+            "Time to cut the cake! 🎂",
+            "🎉 Happy Birthday, Tiggle! 🎈",
+            "Thank you for being the best gaming buddy ♥"
+        ];
+
+        let currentStep = 0;
+        const tiggle = document.getElementById('tiggle');
+        const mimosa = document.getElementById('mimosa');
+        const messageElement = document.getElementById('message');
+        const door = document.getElementById('door');
+        const cake = document.getElementById('cake');
+        const flame = document.getElementById('flame');
+        const celebration = document.getElementById('celebration');
+        let position = 50;
+
+        function moveCharacter(direction) {
+            if (direction === 'right' && position < 500) {
+                position += 50;
+                currentStep++;
+            } else if (direction === 'left' && position > 50) {
+                position -= 50;
+                currentStep--;
+            }
+            
+            tiggle.style.left = `${position}px`;
+            mimosa.style.left = `${position + 100}px`;
+            
+            if (currentStep >= 0 && currentStep < messages.length) {
+                messageElement.style.opacity = '0';
+                setTimeout(() => {
+                    messageElement.textContent = messages[currentStep];
+                    messageElement.style.opacity = '1';
+                }, 500);
+            }
+
+            if (currentStep === 8) {
+                showCake();
+            } else if (currentStep === 9) {
+                startCelebration();
+            }
+        }
+
+        function showCake() {
+            door.style.opacity = '0';
+            cake.style.opacity = '1';
+        }
+
+        function startCelebration() {
+            flame.style.display = 'none';
+            mimosa.classList.add('clapping');
+            celebration.style.opacity = '1';
+            
+            // Create confetti effect
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.background = `hsl(${Math.random() * 360}deg, 100%, 50%)`;
+                confetti.style.borderRadius = '50%';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = `${Math.random() * 100}%`;
+                confetti.style.animation = `fall ${Math.random() * 2 + 1}s linear infinite`;
+                celebration.appendChild(confetti);
+            }
+        }
+
+        document.getElementById('leftBtn').addEventListener('click', () => moveCharacter('left'));
+        document.getElementById('rightBtn').addEventListener('click', () => moveCharacter('right'));
+
+        // Add keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') moveCharacter('left');
+            if (e.key === 'ArrowRight') moveCharacter('right');
+        });
+
+        // Show initial message
+        messageElement.textContent = messages[0];
+        messageElement.style.opacity = '1';
+
+        // Add animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                from { transform: translateY(-100vh) rotate(0deg); }
+                to { transform: translateY(100vh) rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
